@@ -1,0 +1,3 @@
+# Copy this local settings file and name it local_settings.yml
+# Then edit values to match your local set-up.
+data_folder: "/mnt/pile/shared/burst_suppression_data"
