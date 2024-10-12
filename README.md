@@ -1,4 +1,4 @@
-# Project Thesis Title: *Generalizability of an Unsupervised Deep Learning Algorithm in Detecting Burst Suppression in Pediatric EEG Data* 
+# Project Thesis Title: *An Unsupervised Deep Learning Algorithm for Burst Suppression Detection in Pediatric EEG Data: Assessing Generalizability.* 
 
 A brief overview of the project. Who is involved. What it entails. Why it important. And how it will be achieved.
    
