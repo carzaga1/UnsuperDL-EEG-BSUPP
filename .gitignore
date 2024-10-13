@@ -5,6 +5,7 @@ data/
 !data/.gitkeep
 output/
 !output/.gitkeep
+datasets/
 
 ### mrn pseudonym mapping ###
 /references/mrn_pseudonym_keys.csv
