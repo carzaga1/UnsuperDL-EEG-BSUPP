@@ -6,7 +6,7 @@ A brief overview of the project. Who is involved. What it entails. Why it import
  
 This repository contains the implementation and analysis of a deep learning framework designed to enhance the detection of burst suppression (BS) patterns and compute bursts per minute (BPM) on pediatric EEG data from children in the pediatric intensive care unit (PICU) at Universitäts-Kinderspital Zürich (KISPI).
 
-The project pairs a pre-validated unsupervised surrogate algorithm with a deep learning architecture to improve performance and accuracy in classifying BS patterns. Initially, the unsupervised algorithm is validated using pediatric EEG data alone. Subsequently, the algorithm is integrated with an unsupervised neural network and compared to its standalone counterpart. Both the standalone and paired versions will be benchmarked against manual annotations from experienced EEG specialists.
+The project pairs a pre-validated unsupervised surrogate algorithm with a deep learning architecture to improve performance and accuracy in classifying BS patterns. Initially, the unsupervised algorithm is validated using pediatric EEG data alone. Subsequently, the algorithm is integrated with an unsupervised deep learning architecture and compared to its standalone counterpart. Both the standalone and paired versions will be benchmarked against manual annotations from experienced EEG specialists.
 
 This work aims to advance the automation of burst suppression detection, providing a fully interpretable and patient-specific solution that can be integrated seamlessly into ICU workflows. It also seeks to demonstrate the algorithm's generalizability across different patient groups, ensuring its potential application in both adult and pediatric care.
 
@@ -16,9 +16,9 @@ This work aims to advance the automation of burst suppression detection, providi
 
 **Supervisors**: [Oliver Staubli](https://www.oliverstaubli.ch/de/about/work/), [Prof. Dr. Mirko Birbaumer](https://www.hslu.ch/de-ch/hochschule-luzern/ueber-uns/personensuche/profile/?pid=1537) 
 
-**Co-Supervisors**: Prof. Dr. med Georgia Ramantani, Prof. Dr. Med Emanuela Keller 
+**Co-Supervisors**: [Prof. Dr. med Georgia Ramantani](https://www.kispi.uzh.ch/kinderspital/person/ramantani-phd-georgia), [Prof. Dr. Med Emanuela Keller](https://www.usz.ch/team/emanuela-keller/)
 
-**Internal Support**: Dr. med Andrea Rüegger, Alex Lo Biundo Santo Pietro
+**Internal Support**: [Dr. med Andrea Rüegger](https://www.kispi.uzh.ch/kinderspital/person/rueegger-andrea), [Alex Lo Biundo Santo Pietro](https://www.kispi.uzh.ch/kinderspital/person/lo-biundo-santo-pietro)
 
 **External Support**: Jenny Schmid, Marko Seric 
 
@@ -46,23 +46,14 @@ This work aims to advance the automation of burst suppression detection, providi
 - **Model Development**: Iterative process in training and validation of unsupervised ML and DL models. 
 - **Evaluation**: Assessment of model performance using metrics like sensitivity, specificity, precision, AUROC, F1-score, NPV, MAE, and Cohen's kappa.
 
-## Version History
+<!-- ## Version History
 
-* 0.2
-    * Various bug fixes and optimizations
-    * See [commit change]() or See [release history]()
-* 0.1
-    * Initial Release
+* 0.0001
 
 ## License
 
 This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
-
+-->
 ## Acknowledgments
 
 Inspiration, code snippets, etc.
-* [awesome-readme](https://github.com/matiassingers/awesome-readme)
-* [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
-* [dbader](https://github.com/dbader/readme-template)
-* [zenorocha](https://gist.github.com/zenorocha/4526327)
-* [fvcproductions](https://gist.github.com/fvcproductions/1bfc2d4aecb01a834b46)
