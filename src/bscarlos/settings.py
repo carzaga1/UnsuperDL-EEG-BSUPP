@@ -31,6 +31,7 @@ else:
 
 RAW_DATA_FOLDER = DATA_FOLDER / 'raw'
 PROCESSED_DATA_FOLDER = DATA_FOLDER / 'processed'
+RAW_KISPI_DATA_FOLDER = DATA_FOLDER / 'raw_kispi'
 REFERENCES_FOLDER = PROJECT_FOLDER / 'references'
 
 # filenames
