@@ -1,3 +1,6 @@
+import tqdm
+import pandas as pd
+
 class PatientDataProcessor:
     """
     A class used to process patient data.
