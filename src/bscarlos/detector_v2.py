@@ -48,7 +48,7 @@ class ClusteringDetector_v2():
             cleaned_windows.append(window)
         return cleaned_windows
     
-    def compute_cov_matrices(self, windows):
+    def compute_cov_matrices_fast(self, windows):
         cov_matrices = []
         for window in windows:
             cov_matrix = np.cov(window.to_numpy().T) + np.eye(6)*1e-5
@@ -68,7 +68,7 @@ class ClusteringDetector_v2():
         metric_d = np.zeros((n,m))
         for i, c_i in enumerate(cov_matrices_1):
             for j, c_j in enumerate(cov_matrices_2):
-                metric_d[i, j] = self.cov_distance(c_i, c_j)
+                metric_d[i, j] = self.cov_distance_fast(c_i, c_j)
         return metric_d
     
     def get_cluster_labels_fast(self, metric_d, windows):
@@ -122,7 +122,7 @@ class ClusteringDetector_v2():
     def fit(self, eeg):
         windows = self.get_windows_fast(eeg)
         windows_clean = self.clean_windows_200(windows)
-        cov_matrices = self.compute_cov_matrices(windows_clean)
+        cov_matrices = self.compute_cov_matrices_fast(windows_clean)
         metric_d = self.compute_cov_distances_fast(cov_matrices)
         labels = self.get_cluster_labels_fast(metric_d, windows_clean)
         
@@ -133,7 +133,7 @@ class ClusteringDetector_v2():
     def predict(self, eeg):
         windows = self.get_windows_fast(eeg)
         windows_clean = self.clean_windows_200(windows)
-        cov_matrices = self.compute_cov_matrices(windows_clean)
+        cov_matrices = self.compute_cov_matrices_fast(windows_clean)
         return self.classify_cov_matrices_fast(
             self.metric_d_, 
             self.labels_, 
