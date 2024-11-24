@@ -126,21 +126,21 @@ class ClusteringDetector_v2():
     
     
     def fit_detector(self, eeg):
-        windows = self.get_windows(eeg)
-        windows_clean = self.clean_windows(windows)
-        cov_matrices = self.compute_cov_matrices(windows_clean)
-        metric_d = self.compute_cov_distances(cov_matrices)
-        labels = self.get_cluster_labels(metric_d, windows_clean)
+        windows = self.get_windows_fast(eeg)
+        windows_clean = self.clean_windows_200(windows)
+        cov_matrices = self.compute_cov_matrices_fast(windows_clean)
+        metric_d = self.compute_cov_distances_fast(cov_matrices)
+        labels = self.get_cluster_labels_fast(metric_d, windows_clean)
         
         self.cov_matrices_ = cov_matrices
         self.metric_d_ = metric_d
         self.labels_ = labels
         
     def predict_detector(self, eeg):
-        windows = self.get_windows(eeg)
-        windows_clean = self.clean_windows(windows)
-        cov_matrices = self.compute_cov_matrices(windows_clean)
-        return self.classify_cov_matrices(
+        windows = self.get_windows_fast(eeg)
+        windows_clean = self.clean_windows_200(windows)
+        cov_matrices = self.compute_cov_matrices_fast(windows_clean)
+        return self.classify_cov_matrices_fast(
             self.metric_d_, 
             self.labels_, 
             self.cov_matrices_, 
