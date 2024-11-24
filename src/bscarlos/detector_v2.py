@@ -68,7 +68,7 @@ class ClusteringDetector_v2():
         metric_d = np.zeros((n,m))
         for i, c_i in enumerate(cov_matrices_1):
             for j, c_j in enumerate(cov_matrices_2):
-                metric_d[i, j] = self.cov_distance(c_i, c_j)
+                metric_d[i, j] = self.cov_distance_fast(c_i, c_j)
         return metric_d
     
     def get_cluster_labels_fast(self, metric_d, windows):
