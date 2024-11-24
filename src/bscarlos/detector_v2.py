@@ -29,7 +29,10 @@ class ClusteringDetector_v2():
         pass
     
     def get_windows_fast(self, eeg):
-        return [window for _, window in eeg.resample('2.5s')]
+        windows = []
+        for _, window in eeg.resample('2s'):  
+            windows.append(window)
+        return windows 
     
     def clean_windows_200(self, windows):
         cleaned_windows = []
