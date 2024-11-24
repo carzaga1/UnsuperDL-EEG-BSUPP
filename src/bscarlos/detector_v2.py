@@ -120,7 +120,7 @@ class ClusteringDetector_v2():
     
     
     def fit(self, eeg):
-        windows = self.get_windows(eeg)
+        windows = self.get_windows_fast(eeg)
         windows_clean = self.clean_windows_200(windows)
         cov_matrices = self.compute_cov_matrices(windows_clean)
         metric_d = self.compute_cov_distances_fast(cov_matrices)
@@ -131,7 +131,7 @@ class ClusteringDetector_v2():
         self.labels_ = labels
         
     def predict(self, eeg):
-        windows = self.get_windows(eeg)
+        windows = self.get_windows_fast(eeg)
         windows_clean = self.clean_windows_200(windows)
         cov_matrices = self.compute_cov_matrices(windows_clean)
         return self.classify_cov_matrices_fast(
