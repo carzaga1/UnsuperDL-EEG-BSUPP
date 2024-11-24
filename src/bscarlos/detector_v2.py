@@ -85,7 +85,8 @@ class ClusteringDetector_v2():
             - confidence_scores: A list of confidence scores for each window labeled 1.
         """
         sc = SpectralClustering(n_clusters=2, affinity='precomputed', random_state=42)
-        labels = sc.fit_predict(np.exp(- metric_d ** 2 / (2. * np.median(metric_d.ravel()) ** 2)))
+        sc.fit(np.exp(- metric_d ** 2 / (2. * np.median(metric_d.ravel()) ** 2)))
+        labels = sc.labels_
 
         # auto-label clusters
         energy_cluster_0 = []
