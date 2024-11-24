@@ -123,8 +123,8 @@ class ClusteringDetector_v2():
         # get KNN classifier
         kn_clf = KNeighborsClassifier(
             n_neighbors=5, 
-            metric='precomputed', 
-            algorithm='ball_tree'
+            metric='precomputed'
+            #,algorithm='ball_tree'
         )
         kn_clf.fit(metric_d_learning, labels_learning)
         
