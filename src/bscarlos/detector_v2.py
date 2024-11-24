@@ -53,8 +53,9 @@ class ClusteringDetector_v2():
         return cov_matrices
     
     def cov_distance_fast(self, cov_1, cov_2):
+        eig_values = linalg.eigh(cov_1, cov_2, eigvals_only=True)
         # distance between two positive semi-definite symmetric matrices
-        return np.sqrt(np.trace(linalg.logm(cov_1 @ linalg.inv(cov_2)) ** 2))
+        return np.sqrt(np.sum(np.square(np.log(eig_values))))
 
     def compute_cov_distances_fast(self, cov_matrices_1, cov_matrices_2=None):
         if cov_matrices_2 is None:
@@ -63,7 +64,7 @@ class ClusteringDetector_v2():
         metric_d = np.zeros((len(cov_matrices_1), len(cov_matrices_2)))
         for i, c_i in enumerate(cov_matrices_1):
             for j, c_j in enumerate(cov_matrices_2):
-                metric_d[i, j] = self.cov_distance(c_i, c_j)
+                metric_d[i, j] = self.cov_distance_fast(c_i, c_j)
         return metric_d
     
     def get_cluster_labels_fast(self, metric_d, windows):
