@@ -30,7 +30,7 @@ class ClusteringDetector_v2():
     
     def get_windows_fast(self, eeg):
         windows = []
-        for _, window in eeg.resample('2s'):  
+        for _, window in eeg.resample('2.5s'):  
             windows.append(window)
         return windows 
     
@@ -63,11 +63,12 @@ class ClusteringDetector_v2():
     def compute_cov_distances_fast(self, cov_matrices_1, cov_matrices_2=None):
         if cov_matrices_2 is None:
             cov_matrices_2 = cov_matrices_1
-
-        metric_d = np.zeros((len(cov_matrices_1), len(cov_matrices_2)))
+        n = len(cov_matrices_1)
+        m = len(cov_matrices_2)
+        metric_d = np.zeros((n,m))
         for i, c_i in enumerate(cov_matrices_1):
             for j, c_j in enumerate(cov_matrices_2):
-                metric_d[i, j] = self.cov_distance_fast(c_i, c_j)
+                metric_d[i, j] = self.cov_distance(c_i, c_j)
         return metric_d
     
     def get_cluster_labels_fast(self, metric_d, windows):
