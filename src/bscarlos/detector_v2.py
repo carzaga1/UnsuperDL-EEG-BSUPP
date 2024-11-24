@@ -46,7 +46,11 @@ class ClusteringDetector_v2():
         return cleaned_windows
     
     def compute_cov_matrices_fast(self, windows):
-        return [np.cov(window.to_numpy().T) + np.eye(6)*1e-5 for window in windows]
+        cov_matrices = []
+        for window in windows:
+            cov_matrix = np.cov(window.to_numpy().T) + np.eye(6)*1e-5
+            cov_matrices.append(cov_matrix)
+        return cov_matrices
     
     def cov_distance_fast(self, cov_1, cov_2):
         # distance between two positive semi-definite symmetric matrices
