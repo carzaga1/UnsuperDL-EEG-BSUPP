@@ -98,13 +98,20 @@ class ClusteringDetector_v2():
                 energy_cluster_0.append(energy)
             else:
                 energy_cluster_1.append(energy)
+
         Z_0 = np.sum(energy_cluster_0)
         Z_1 = np.sum(energy_cluster_1)
         p_cluster0_burst_1 = Z_0 / (Z_0 + Z_1)
 
-        # adjust labels if necessary to ensure 1 is the high-energy cluster
-        if p_cluster0_burst_1 > 0.5:
-            labels = 1 - labels  # Swap labels
+        n = np.size(labels)
+        N_1 = np.sum(labels)
+        N_0 = n - N_1
+        p_cluster0_burst_2 = 1 - N_0 / (N_0 + N_1)
+
+        p_cluster0_burst = 0.5*(p_cluster0_burst_1 + p_cluster0_burst_2)
+
+        if p_cluster0_burst > 0.5:
+            labels = 1 - labels  # Swap labels    
 
         # calculate confidence scores for cluster 1 (burst cluster)
         confidence_scores = []
