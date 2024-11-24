@@ -63,11 +63,48 @@ class ClusteringDetector_1():
         return metric_d
     
     def get_cluster_labels_fast(self, metric_d, windows):
+        """
+        Clusters the EEG windows and assigns labels based on energy.
+        Includes confidence score calculation for windows labeled as bursts.
+
+        Args:
+          metric_d: The distance matrix between covariance matrices.
+          windows: A list of EEG windows.
+
+        Returns:
+          A tuple containing:
+            - labels: A list of cluster labels for each window.
+            - confidence_scores: A list of confidence scores for each window labeled 1.
+        """
         sc = SpectralClustering(n_clusters=2, affinity='precomputed', random_state=42)
         labels = sc.fit_predict(np.exp(- metric_d ** 2 / (2. * np.median(metric_d.ravel()) ** 2)))
-        energy = np.array([window.pow(2).sum().sum() for window in windows])
-        p_cluster0_burst = np.sum(energy[labels == 0]) / energy.sum()
-        return labels if p_cluster0_burst > 0.5 else 1 - labels
+
+        # auto-label clusters
+        energy_cluster_0 = []
+        energy_cluster_1 = []
+        for label, window in zip(labels, windows):
+            energy = window.pow(2).sum().sum()
+            if label == 0:
+                energy_cluster_0.append(energy)
+            else:
+                energy_cluster_1.append(energy)
+        Z_0 = np.sum(energy_cluster_0)
+        Z_1 = np.sum(energy_cluster_1)
+        # Adjust labels if necessary to ensure 1 is the high-energy cluster
+        if p_cluster0_burst_1 > 0.5:
+            labels = 1 - labels  # Swap labels
+
+        # Calculate confidence scores for cluster 1 (burst cluster)
+        confidence_scores = []
+        for label, window in zip(labels, windows):
+            if label == 1:
+                energy = window.pow(2).sum().sum()
+                confidence = energy / Z_1
+                confidence_scores.append(confidence)
+            else:
+                confidence_scores.append(None)
+
+        return labels, confidence_scores
     
     def classify_cov_matrices_fast(self, metric_d_learning, labels_learning, 
                               cov_matrices_learning, cov_matrices):
