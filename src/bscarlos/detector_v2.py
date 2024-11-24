@@ -39,16 +39,16 @@ class ClusteringDetector_v2():
         for window in windows:
             window = window.copy()
             max_abs_values = window.abs().max()
-            artifact_channels = max_abs_values[max_abs_values > 200].index.to_list()
+            cols_to_fix = max_abs_values.loc[max_abs_values>200].index.to_list()
 
-            for channel in artifact_channels:
-                white_noise_replacement = np.random.normal(0, 1, size=len(window[channel]))
-                window[channel] = white_noise_replacement
+            for col in cols_to_fix:
+                white_noise_replacement = np.random.normal(0, 1, size=len(window[col]))
+                window[col] = white_noise_replacement
 
             cleaned_windows.append(window)
         return cleaned_windows
     
-    def compute_cov_matrices_fast(self, windows):
+    def compute_cov_matrices(self, windows):
         cov_matrices = []
         for window in windows:
             cov_matrix = np.cov(window.to_numpy().T) + np.eye(6)*1e-5
@@ -58,7 +58,7 @@ class ClusteringDetector_v2():
     def cov_distance_fast(self, cov_1, cov_2):
         eig_values = linalg.eigh(cov_1, cov_2, eigvals_only=True)
         # distance between two positive semi-definite symmetric matrices
-        return np.sqrt(np.sum(np.square(np.log(eig_values))))
+        return np.sqrt(np.sum(np.square(np.log(eig_values)))) 
 
     def compute_cov_distances_fast(self, cov_matrices_1, cov_matrices_2=None):
         if cov_matrices_2 is None:
@@ -68,23 +68,11 @@ class ClusteringDetector_v2():
         metric_d = np.zeros((n,m))
         for i, c_i in enumerate(cov_matrices_1):
             for j, c_j in enumerate(cov_matrices_2):
-                metric_d[i, j] = self.cov_distance_fast(c_i, c_j)
+                metric_d[i, j] = self.cov_distance(c_i, c_j)
         return metric_d
     
     def get_cluster_labels_fast(self, metric_d, windows):
-        """
-        Clusters the EEG windows and assigns labels based on energy.
-        Includes confidence score calculation for windows labeled as bursts.
-
-        Args:
-          metric_d: The distance matrix between covariance matrices.
-          windows: A list of EEG windows.
-
-        Returns:
-          A tuple containing:
-            - labels: A list of cluster labels for each window.
-            - confidence_scores: A list of confidence scores for each window labeled 1.
-        """
+        # cluster into 2 clusters
         sc = SpectralClustering(n_clusters=2, affinity='precomputed', random_state=42)
         sc.fit(np.exp(- metric_d ** 2 / (2. * np.median(metric_d.ravel()) ** 2)))
         labels = sc.labels_
@@ -111,19 +99,9 @@ class ClusteringDetector_v2():
         p_cluster0_burst = 0.5*(p_cluster0_burst_1 + p_cluster0_burst_2)
 
         if p_cluster0_burst > 0.5:
-            labels = 1 - labels  # Swap labels    
-
-        # calculate confidence scores for cluster 1 (burst cluster)
-        confidence_scores = []
-        for label, window in zip(labels, windows):
-            if label == 1:
-                energy = window.pow(2).sum().sum()
-                confidence = energy / Z_1
-                confidence_scores.append(confidence)
-            else:
-                confidence_scores.append(None)
-
-        return labels, confidence_scores
+            labels = 1 - labels
+        
+        return labels
     
     def classify_cov_matrices_fast(self, metric_d_learning, labels_learning, 
                               cov_matrices_learning, cov_matrices):
@@ -131,7 +109,6 @@ class ClusteringDetector_v2():
         kn_clf = KNeighborsClassifier(
             n_neighbors=5, 
             metric='precomputed'
-            #,algorithm='ball_tree'
         )
         kn_clf.fit(metric_d_learning, labels_learning)
         
@@ -142,10 +119,10 @@ class ClusteringDetector_v2():
         return kn_clf.predict(X_pred.T)
     
     
-    def fit_detector(self, eeg):
-        windows = self.get_windows_fast(eeg)
+    def fit(self, eeg):
+        windows = self.get_windows(eeg)
         windows_clean = self.clean_windows_200(windows)
-        cov_matrices = self.compute_cov_matrices_fast(windows_clean)
+        cov_matrices = self.compute_cov_matrices(windows_clean)
         metric_d = self.compute_cov_distances_fast(cov_matrices)
         labels = self.get_cluster_labels_fast(metric_d, windows_clean)
         
@@ -153,10 +130,10 @@ class ClusteringDetector_v2():
         self.metric_d_ = metric_d
         self.labels_ = labels
         
-    def predict_detector(self, eeg):
-        windows = self.get_windows_fast(eeg)
+    def predict(self, eeg):
+        windows = self.get_windows(eeg)
         windows_clean = self.clean_windows_200(windows)
-        cov_matrices = self.compute_cov_matrices_fast(windows_clean)
+        cov_matrices = self.compute_cov_matrices(windows_clean)
         return self.classify_cov_matrices_fast(
             self.metric_d_, 
             self.labels_, 
