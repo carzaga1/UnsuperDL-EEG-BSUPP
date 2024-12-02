@@ -6,7 +6,7 @@ from sklearn.cluster import SpectralClustering
 from sklearn.neighbors import KNeighborsClassifier
 
 
-class ClusteringDetector():
+class ClusteringDetector_v3():
     def __init__(self):
         pass
     
