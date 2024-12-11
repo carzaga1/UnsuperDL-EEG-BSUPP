@@ -55,7 +55,7 @@ class PatientDataProcessor:
             data = patient_info['data']
             
             total_duration = data.index[-1] - data.index[0]
-            learning_period = pd.Timedelta(seconds=total_duration._seconds() * 0.25)
+            learning_period = pd.Timedelta(seconds=total_duration.total_seconds() * 0.25)
             
             training_data = data[data.index < learning_period]
             testing_data = data[data.index >= learning_period]
