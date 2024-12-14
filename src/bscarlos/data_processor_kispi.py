@@ -58,24 +58,33 @@ class PatientDataProcessor:
         for patient_id, patient_info in tqdm.tqdm(patient_data.items()):
             data = patient_info['data']
             fs = patient_info['fs']
-            
-            # band-pass filter
-            sos = iirfilter(
-                N=18,                  # 18th-order filter
-                Wn=[low_cut, high_cut],  # Frequency range
-                btype='band',          # Band-pass filter
-                ftype='cheby1',        # Chebyshev type I
-                rp=0.1,                # Maximum ripple (0.1 dB)
-                fs=fs,                 # Sampling frequency
-                output='sos'           # Second-order sections
-            )
-            
-            # zero-phase filtering
-            filtered_data = data.apply(lambda x: sosfiltfilt(sos, x), axis=0)
-            
-            # update data with filtered signals
-            patient_data[patient_id]['data'] = filtered_data
         
+            # Band-pass filter design
+            sos = iirfilter(
+                 N=18,                  # 18th-order filter
+                 Wn=[low_cut, high_cut],  # Frequency range
+                 btype='band',          # Band-pass filter
+                 ftype='cheby1',        # Chebyshev type I
+                 rp=0.1,                # Maximum ripple (0.1 dB)
+                 fs=fs,                 # Sampling frequency
+                 output='sos'           # Second-order sections
+             )
+     
+             # Identify columns to filter (e.g., exclude 'ground_truth')
+            signal_columns = data.select_dtypes(include='number').columns.difference(['ground_truth'])
+             
+             # Apply the filter only to the signal columns
+            filtered_signals = data[signal_columns].apply(lambda x: sosfiltfilt(sos, x), axis=0)
+             
+             # Combine filtered signals with non-filtered columns
+            filtered_data = pd.concat([filtered_signals, data.drop(columns=signal_columns)], axis=1)
+             
+             # Preserve column order
+            filtered_data = filtered_data[data.columns]
+             
+             # Update patient data with filtered signals
+            patient_data[patient_id]['data'] = filtered_data
+
         return patient_data
     
     def split_data_for_training(self, patient_data):
