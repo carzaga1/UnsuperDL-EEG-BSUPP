@@ -52,6 +52,30 @@ class PatientDataProcessor:
             patient_data[patient_id]['data'] = data
         return patient_data
     
+    def apply_bandpass_filter(self, patient_data, low_cut=0.5, high_cut=15.0):
+        for patient_id, patient_info in tqdm.tqdm(patient_data.items()):
+            data = patient_info['data']
+            fs = patient_info['fs']
+            
+            # Design the band-pass filter
+            sos = iirfilter(
+                N=18,                  # 18th-order filter
+                Wn=[low_cut, high_cut],  # Frequency range
+                btype='band',          # Band-pass filter
+                ftype='cheby1',        # Chebyshev type I
+                rp=0.1,                # Maximum ripple (0.1 dB)
+                fs=fs,                 # Sampling frequency
+                output='sos'           # Second-order sections
+            )
+            
+            # Apply zero-phase filtering
+            filtered_data = data.apply(lambda x: sosfiltfilt(sos, x), axis=0)
+            
+            # Update the data with filtered signals
+            patient_data[patient_id]['data'] = filtered_data
+        
+        return patient_data
+    
     def split_data_for_training(self, patient_data):
         for patient_id, patient_info in tqdm.tqdm(patient_data.items()):
             data = patient_info['data']
