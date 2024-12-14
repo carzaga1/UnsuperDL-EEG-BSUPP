@@ -1,6 +1,8 @@
 import tqdm
 import pandas as pd
+import numpy as np
 
+from scipy.signal import iirfilter, sosfiltfilt
 from sklearn.model_selection import KFold
 
 class PatientDataProcessor:
@@ -57,7 +59,7 @@ class PatientDataProcessor:
             data = patient_info['data']
             fs = patient_info['fs']
             
-            # Design the band-pass filter
+            # band-pass filter
             sos = iirfilter(
                 N=18,                  # 18th-order filter
                 Wn=[low_cut, high_cut],  # Frequency range
@@ -68,10 +70,10 @@ class PatientDataProcessor:
                 output='sos'           # Second-order sections
             )
             
-            # Apply zero-phase filtering
+            # zero-phase filtering
             filtered_data = data.apply(lambda x: sosfiltfilt(sos, x), axis=0)
             
-            # Update the data with filtered signals
+            # update data with filtered signals
             patient_data[patient_id]['data'] = filtered_data
         
         return patient_data
