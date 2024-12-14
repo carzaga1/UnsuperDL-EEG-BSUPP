@@ -1,6 +1,8 @@
 import tqdm
 import pandas as pd
 
+from sklearn.model_selection import KFold
+
 class PatientDataProcessor:
     """
     A class used to process patient data.
@@ -62,6 +64,30 @@ class PatientDataProcessor:
             
             patient_data[patient_id]['training_data'] = training_data
             patient_data[patient_id]['testing_data'] = testing_data
+        return patient_data
+    
+    def split_data_for_5fold_cv(self, patient_data, n_splits=5):
+        kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)  # Initialize KFold with 5 splits
+        
+        for patient_id, patient_info in tqdm.tqdm(patient_data.items()):
+            data = patient_info['data']
+            
+            # Initialize lists to store train and test splits
+            train_folds = []
+            test_folds = []
+            
+            # Iterate over each split
+            for train_index, test_index in kf.split(data):
+                train_data = data.iloc[train_index]
+                test_data = data.iloc[test_index]
+                
+                train_folds.append(train_data)
+                test_folds.append(test_data)
+            
+            # Store the folds for this patient
+            patient_data[patient_id]['train_folds'] = train_folds
+            patient_data[patient_id]['test_folds'] = test_folds
+        
         return patient_data
                          
     def remove_ground_truth_column(self, patient_data):
