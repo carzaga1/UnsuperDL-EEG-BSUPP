@@ -3,15 +3,13 @@ import numpy as np
 import pandas as pd
 
 class EEGPlotter:
-    def __init__(self, df):
-        """
-        Initialize the EEGPlotter with the provided DataFrame.
-
-        Parameters:
-        df (pd.DataFrame): EEG data with time-indexed rows and columns for each channel.
-        """
-        self.df = df
-        self.t_s = (df.index / pd.Timedelta(1, 's')).to_numpy()  # Convert time index to seconds
+    def __init__(self, df, t_s=None, fs=None, patient_id=None, patient_info=None):
+        self.df = pd.df
+        self.t_s = t_s
+        self.fs = fs
+        self.patient_id = patient_id
+        self.patient_info = patient_info
+        pass
 
     def plot_eeg(self):
         """
