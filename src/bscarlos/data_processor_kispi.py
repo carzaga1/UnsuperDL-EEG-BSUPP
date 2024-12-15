@@ -83,7 +83,7 @@ class PatientDataProcessor:
             filtered_data = filtered_data[data.columns]
              
              # Update patient data with filtered signals
-            patient_data[patient_id]['data'] = filtered_data
+            patient_data[patient_id]['filtered_data'] = filtered_data
 
         return patient_data
     
