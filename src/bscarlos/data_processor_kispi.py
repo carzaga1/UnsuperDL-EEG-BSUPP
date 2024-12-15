@@ -101,6 +101,21 @@ class PatientDataProcessor:
             patient_data[patient_id]['testing_data'] = testing_data
         return patient_data
     
+    def split_data_with_15min_learning_period(self, patient_data):
+        for patient_id, patient_info in tqdm.tqdm(patient_data.items()):
+            data = patient_info['data']
+    
+            # Calculate the cutoff datetime for learning data (15 minutes)
+            learning_period = pd.Timedelta(minutes=15)  
+            cutoff_datetime = data.index[0] + learning_period
+    
+            training_data = data[data.index < cutoff_datetime]
+            testing_data = data[data.index >= cutoff_datetime]
+    
+            patient_data[patient_id]['training_data'] = training_data
+            patient_data[patient_id]['testing_data'] = testing_data
+        return patient_data
+    
     def split_data_for_5fold_cv(self, patient_data, n_splits=5):
         kf = KFold(n_splits=n_splits, shuffle=True, random_state=42)  # Initialize KFold with 5 splits
         
