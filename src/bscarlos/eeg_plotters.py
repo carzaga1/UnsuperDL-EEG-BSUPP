@@ -1,6 +1,7 @@
-import matplotlib.pyplot as plt
+import mne
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class EEGPlotter:
     def __init__(self, df, t_s=None, fs=None, patient_id=None, patient_info=None):
@@ -111,3 +112,22 @@ class EEGPlotter:
         plt.suptitle('EEG Data (First 5 Minutes)')
         plt.tight_layout()
         plt.show()
+
+        import mne
+
+    def plot_eeg_mne(self):
+    """
+    Plots raw EEG data using the MNE library.
+    """
+    eeg_data = self.df.drop(columns=['ground_truth', 'label'])  # Exclude non-EEG columns
+    sfreq = self.fs  # Use the provided sampling frequency
+    ch_names = eeg_data.columns.tolist()
+
+    # Create info object (assuming all channels are EEG)
+    info = mne.create_info(ch_names=ch_names, sfreq=sfreq, ch_types=['eeg'] * len(ch_names))
+
+    # Create RawArray object
+    raw = mne.io.RawArray(eeg_data.values.T, info)
+
+    # Plot the raw EEG data
+    raw.plot(show_scrollbars=False, show_scalebars=True)
