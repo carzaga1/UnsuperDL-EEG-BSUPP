@@ -18,7 +18,7 @@ This work aims to advance the automation of burst suppression detection, providi
 
 **Internal Support**: [Dr. med Andrea Rüegger](https://www.kispi.uzh.ch/kinderspital/person/rueegger-andrea), [Alex Lo Biundo Santo Pietro](https://www.kispi.uzh.ch/kinderspital/person/lo-biundo-santo-pietro)
 
-**External Support**: Jenny Schmid, [Marko Seric](https://www.usz.ch/team/marko-seric/) 
+**External Support**: [Jenny Schmid](https://www.ifi.uzh.ch/en/ivda/team/schmid0.html), [Marko Seric](https://www.usz.ch/team/marko-seric/) 
 
 ## Research Objectives: 
 
@@ -47,12 +47,10 @@ This work aims to advance the automation of burst suppression detection, providi
 <!-- ## Version History
 
 * 0.0001
-
+-->
 ## License
 
-This project is licensed under the [NAME HERE] License - see the LICENSE.md file for details
+This project is licensed under the Apache 2.0 License - see the LICENSE.md file for details
 -->
 ## Acknowledgments
 
-Inspiration, code snippets, etc.
-Inspiration, code snippets, etc.
