@@ -50,7 +50,7 @@ This work aims to advance the automation of burst suppression detection, providi
 -->
 ## License
 
-This project is licensed under the Apache 2.0 License - see the LICENSE.md file for details
+This project is licensed under the Apache 2.0 License - see the [Licence.txt](LICENSE.txt) file for details
 -->
 ## Acknowledgments
 
