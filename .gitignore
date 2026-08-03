@@ -4,9 +4,9 @@ local_settings.yml
 # DATA, DATASETS & LOGS
 # -------------------------------------------------------------------
 # Ignore all data directories completely
-data/
-output/
-datasets/
+data/*
+output/*
+datasets/*
 
 # Allow .gitkeep to maintain directory structure
 !data/.gitkeep
@@ -15,7 +15,6 @@ datasets/
 
 # EXCEPTION: Explicitly allow the dummy data folder for agent testing
 !data/dummy/
-!data/dummy/*
 
 # -------------------------------------------------------------------
 # GLOBAL CLINICAL & ML ARTIFACT FALLBACKS
