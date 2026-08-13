@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5.20.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "layer": [{"data": {"name": "data-fa8ec63381b318d7dde4765337405504"}, "mark": {"type": "bar"}, "encoding": {"tooltip": [{"field": "Bipolar Channel", "type": "nominal"}, {"field": "Mean Value", "type": "quantitative"}], "x": {"field": "Bipolar Channel", "title": "Bipolar Channel", "type": "nominal"}, "y": {"field": "Mean Value", "title": "Mean Value", "type": "quantitative"}}, "name": "view_2", "title": "Bar Chart with Outliers"}, {"data": {"name": "data-fa8ec63381b318d7dde4765337405504"}, "mark": {"type": "errorbar", "extent": "stderr"}, "encoding": {"x": {"field": "Bipolar Channel", "type": "nominal"}, "y": {"field": "Mean Value", "title": "Mean Value", "type": "quantitative"}, "yError": {"field": "Std Dev"}}}], "params": [{"name": "param_4", "select": {"type": "interval", "encodings": ["x", "y"]}, "bind": "scales", "views": ["view_2"]}], "$schema": "https://vega.github.io/schema/vega-lite/v5.20.1.json", "datasets": {"data-fa8ec63381b318d7dde4765337405504": [{"Bipolar Channel": "Fp1-F7", "Mean Value": -77.29425811767578}, {"Bipolar Channel": "F7-T3", "Mean Value": 120.35635375976562}, {"Bipolar Channel": "T3-T5", "Mean Value": 0.3433672785758972}, {"Bipolar Channel": "Fp1-F3", "Mean Value": 109.64238739013672}, {"Bipolar Channel": "F3-C3", "Mean Value": -6.047460556030273}, {"Bipolar Channel": "C3-P3", "Mean Value": -86.16969299316406}, {"Bipolar Channel": "P3-O1", "Mean Value": 69.02364349365234}, {"Bipolar Channel": "Fz-Cz", "Mean Value": 1.931171178817749}, {"Bipolar Channel": "Cz-Pz", "Mean Value": -42.17362976074219}, {"Bipolar Channel": "Fp2-F4", "Mean Value": -63.610313415527344}, {"Bipolar Channel": "F4-C4", "Mean Value": -30.21794319152832}, {"Bipolar Channel": "C4-P4", "Mean Value": 94.78022766113281}, {"Bipolar Channel": "P4-O2", "Mean Value": -138.7074432373047}, {"Bipolar Channel": "Fp2-F8", "Mean Value": -52.0611686706543}, {"Bipolar Channel": "F8-T4", "Mean Value": 66.70966339111328}, {"Bipolar Channel": "T4-T6", "Mean Value": -34.336917877197266}, {"Bipolar Channel": "T6-O2", "Mean Value": -118.06705474853516}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
