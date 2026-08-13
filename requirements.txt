@@ -12,5 +12,6 @@ torch==2.5.1
 scipy==1.14.1
 scikit-learn==1.5.2
 notebook==6.4.12
+click==8.1.7
 
 
