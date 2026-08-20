@@ -1,4 +1,42 @@
 [build-system]
-# XXX: If your project needs other packages to build properly, add them to this list.
 requires = ["setuptools >= 64"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "bscarlos"
+version = "0.1.0"
+description = "Unsupervised deep learning pipeline for burst-suppression detection in pediatric EEG data."
+authors = [{ name = "Carlos Arzaga" }]
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "pandas==2.2.3",
+    "pyarrow==17.0.0",
+    "edf2parquet @ git+https://github.com/NarayanSchuetz/edf2parquet.git@e919f7bffce8256703d9b6974c8e3aaac636fd56",
+    "h5py==3.11.0",
+    "PyYAML==6.0.1",
+    "numpy==1.24.4",
+    "matplotlib==3.9.2",
+    "tqdm==4.66.4",
+    "tensorflow==2.17.0",
+    "tf_keras==2.17.0",
+    "torch==2.5.1",
+    "scipy==1.14.1",
+    "scikit-learn==1.5.2",
+    "notebook==6.4.12",
+    "click==8.1.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==8.3.3", "pytest-cov==5.0.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.uv]
+# tensorflow-io-gcs-filesystem has no Windows wheel and isn't actually required there;
+# scoping the resolvable environments to what this project actually targets (native
+# Windows workstations + Linux Docker/CI) avoids uv treating it as unsatisfiable.
+required-environments = [
+    "sys_platform == 'win32' and platform_machine == 'AMD64'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]

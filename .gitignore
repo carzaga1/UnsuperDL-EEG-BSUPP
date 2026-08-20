@@ -7,11 +7,13 @@ local_settings.yml
 data/*
 output/*
 datasets/*
+models/*
 
 # Allow .gitkeep to maintain directory structure
 !data/.gitkeep
 !output/.gitkeep
 !datasets/.gitkeep
+!models/.gitkeep
 
 # EXCEPTION: Explicitly allow the dummy data folder for agent testing
 !data/dummy/
