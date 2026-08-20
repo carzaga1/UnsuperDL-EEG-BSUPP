@@ -24,6 +24,8 @@ dependencies = [
     "scikit-learn==1.5.2",
     "notebook==6.4.12",
     "click==8.1.7",
+    "mne==1.9.0",
+    "edfio==0.4.16",
 ]
 
 [project.optional-dependencies]

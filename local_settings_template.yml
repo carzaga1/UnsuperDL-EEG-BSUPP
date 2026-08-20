@@ -1,3 +1,7 @@
 # Copy this local settings file and name it local_settings.yml
 # Then edit values to match your local set-up.
 data_folder: "/UnsuperDL-EEG-BSUPP/data"
+
+# Optional. Defaults are used if omitted.
+# device: "cpu"   # "cpu" | "cuda" | "mps"
+# n_jobs: -1

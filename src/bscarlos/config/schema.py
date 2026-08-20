@@ -1,6 +1,11 @@
+"""VAE training configuration: dataclass + YAML loader."""
+
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
 import yaml
 
 
@@ -20,7 +25,10 @@ class VAETrainingConfig:
     annotator: str = "a1"
     checkpoint_dir: str = "models"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        # Not just defensive: PyYAML's safe_load parses a bare "1e-5" (no decimal
+        # point) as the *string* "1e-5", not a float. This coercion is what
+        # actually makes that scientific-notation form work.
         self.n_channels = int(self.n_channels)
         self.window_size = int(self.window_size)
         self.input_dim = int(self.input_dim)
@@ -30,19 +38,20 @@ class VAETrainingConfig:
         self.batch_size = int(self.batch_size)
         self.num_epochs = int(self.num_epochs)
         self.random_seed = int(self.random_seed)
-        if self.input_dim != self.window_size * self.n_channels:
+
+        expected_input_dim = self.window_size * self.n_channels
+        if self.input_dim != expected_input_dim:
             raise ValueError(
                 f"input_dim ({self.input_dim}) must equal window_size * n_channels "
-                f"({self.window_size * self.n_channels})"
+                f"({self.window_size} * {self.n_channels} = {expected_input_dim})"
             )
 
 
 def load_training_config(path: Path | str | None = None, **overrides: Any) -> VAETrainingConfig:
-    data: dict[str, Any] = {}
+    values: dict[str, Any] = {}
     if path is not None:
-        p = Path(path)
-        if p.exists():
-            with open(p, "r") as f:
-                data = yaml.safe_load(f) or {}
-    data.update(overrides)
-    return VAETrainingConfig(**data)
+        with open(path, "r") as f:
+            loaded = yaml.safe_load(f) or {}
+        values.update(loaded)
+    values.update(overrides)
+    return VAETrainingConfig(**values)
