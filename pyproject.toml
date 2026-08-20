@@ -24,6 +24,8 @@ dependencies = [
     "scikit-learn==1.5.2",
     "notebook==6.4.12",
     "click==8.1.7",
+    "mne==1.9.0",
+    "edfio==0.4.16",
 ]
 
 [project.optional-dependencies]
@@ -31,6 +33,10 @@ dev = ["pytest==8.3.3", "pytest-cov==5.0.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
 
 [tool.uv]
 # tensorflow-io-gcs-filesystem has no Windows wheel and isn't actually required there;
