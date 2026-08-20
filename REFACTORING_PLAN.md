@@ -75,6 +75,7 @@ tests/                           # NEW top-level, mirrors src/bscarlos
 
 Dockerfile                       # NEW — CPU image
 Dockerfile.cuda                  # NEW — GPU image
+docker-compose.yml               # NEW — local orchestration; bind-mounts notebooks/, data/, models/
 .dockerignore                    # NEW
 .github/workflows/ci.yml         # NEW
 pyproject.toml                   # dependencies + metadata (uv/setuptools)
@@ -108,6 +109,7 @@ Two-tier YAML (no Hydra — chosen to minimize risk to the `settings.py` noteboo
   - `Dockerfile.cuda` — an `nvidia/cuda` runtime base, for GPU-equipped workstations. GitHub-hosted CI runners have no GPU, so CI only *builds* this image, not runs it — the CPU image is built and smoke-run.
 - `.dockerignore` excludes `notebooks/, data/, output/, models/, references/, local_settings.yml, .git, .venv, __pycache__, .ipynb_checkpoints`.
 - **PHI safety**: nothing under `data/`, `output/`, or `references/mrn_pseudonym_keys.csv` is ever copied into an image layer. Real data reaches a container only via `docker run -v` bind mounts at runtime. CI and test images never see real data — only synthetic fixtures generated in-process.
+- **`docker-compose.yml`** (local dev orchestration, not used in CI): declares the same bind-mount pattern instead of ad-hoc `docker run -v` flags — mounts the repo root (so `notebooks/` is live-editable inside the container even though `.dockerignore` keeps it out of the built image itself) plus `data/`/`models/`/`local_settings.yml` read-write, and runs `jupyter notebook --ip=0.0.0.0` by default so notebooks stay usable in a containerized environment. A `gpu` compose profile builds `Dockerfile.cuda` instead. This is the resolution to "won't `notebooks/` be invisible in Docker?" below — the image never contains it, but the running container sees it via the mount.
 
 ---
 
@@ -230,10 +232,10 @@ Functions to implement:
 - Output: `scripts/train_vae.py` and `scripts/predict_vae.py` — thin argument-parsing wrappers (`--config path/to/config.yml` plus override flags) that import from `bscarlos.training`/`bscarlos.inference` and call straight through; no business logic lives in these files.
 - Verify: `python scripts/train_vae.py --config config/vae_6ch.yml --num-epochs 1` (with `PROCESSED_KISPI_DATA_FOLDER` monkeypatched to synthetic parquet via a test harness invoking the script's `main()`) exits 0.
 
-**T21 — Dockerfiles (CPU + CUDA)**
+**T21 — Dockerfiles (CPU + CUDA) + docker-compose.yml**
 - Input: final `pyproject.toml`/`uv.lock` (T2), `src/bscarlos/__main__.py`, `scripts/`.
-- Output: `Dockerfile` (python:3.11-slim, two-stage, installs `git` + `uv`, runs `uv sync --frozen --no-dev`) and `Dockerfile.cuda` (nvidia/cuda runtime base, same pattern), `.dockerignore`.
-- Verify: `docker build -f Dockerfile -t bscarlos:cpu .` and `docker build -f Dockerfile.cuda -t bscarlos:cuda .` both succeed; `docker run --rm bscarlos:cpu --help` prints CLI help; confirm no `data/`/`references/`/`models/` path appears in the build context.
+- Output: `Dockerfile` (python:3.11-slim, two-stage, installs `git` + `uv`, runs `uv sync --frozen --no-dev`) and `Dockerfile.cuda` (nvidia/cuda runtime base, same pattern), `.dockerignore`, and `docker-compose.yml` — a `bscarlos` service building `Dockerfile`, bind-mounting the repo root (`.:/app`) plus `local_settings.yml`, running `jupyter notebook --ip=0.0.0.0 --no-browser`, exposing port 8888; a `bscarlos-cuda` service under a `gpu` compose profile building `Dockerfile.cuda` with the same mounts plus `deploy.resources.reservations.devices` GPU reservation.
+- Verify: `docker build -f Dockerfile -t bscarlos:cpu .` and `docker build -f Dockerfile.cuda -t bscarlos:cuda .` both succeed; `docker run --rm bscarlos:cpu --help` prints CLI help; confirm no `data/`/`references/`/`models/` path appears in the build context; `docker compose config` validates without error; `docker compose up bscarlos` starts and `notebooks/*.ipynb` is visible/editable inside the running container despite being absent from the built image (bind mount, not baked in).
 
 **T22 — GitHub Actions CI workflow**
 - Input: `pyproject.toml`/`uv.lock` (T2), full `tests/` suite (T1–T21).
@@ -246,6 +248,6 @@ Functions to implement:
 
 1. `uv run pytest tests/ -v --cov=bscarlos` — full suite green, using only synthetic data.
 2. `python -m bscarlos preprocess-data` and `python scripts/train_vae.py --config config/vae_6ch.yml` succeed against synthetic fixtures via CLI smoke tests.
-3. `docker build` succeeds for both `Dockerfile` and `Dockerfile.cuda`; the CPU image runs `--help`.
+3. `docker build` succeeds for both `Dockerfile` and `Dockerfile.cuda`; the CPU image runs `--help`; `docker compose up bscarlos` gives live access to `notebooks/` inside the container via bind mount.
 4. CI workflow is green on GitHub Actions and never touches real KISPI data.
 5. `git diff --stat notebooks/` shows no changes — the notebooks directory remains byte-identical throughout this refactor.
