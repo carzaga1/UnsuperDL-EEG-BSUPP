@@ -104,7 +104,6 @@ Two-tier YAML (no Hydra — chosen to minimize risk to the `settings.py` noteboo
   - `requires-python = ">=3.11,<3.12"` — narrowed because `numpy==1.24.4` (pinned) is incompatible with Python ≥3.12 per `pandas==2.2.3`'s own constraints; this matches the actually-tested environment anyway.
   - `[tool.uv].required-environments` is pinned to Windows x86_64 + Linux x86_64 (`sys_platform == 'win32'`/`'linux' and platform_machine == 'AMD64'`/`'x86_64'`) because `tensorflow-io-gcs-filesystem` (a transitive `tensorflow` dependency) has no Windows wheel and isn't actually needed there; without this, `uv lock`/`uv sync` fails to resolve on Windows. Any Dockerfile task must keep the Linux target resolvable too.
   - Because `edf2parquet` is a VCS (git) dependency, any Docker build stage running `uv sync` needs `git` installed in the image, not just `uv`/Python.
-  - `mne==1.9.0` and `edfio==0.4.16` were **not** originally declared anywhere (not in the old `requirements.txt` either) despite several notebooks importing them directly — they were only ever present because someone `pip install`ed them by hand into a local venv. Added as proper pinned dependencies during T6, since the synthetic EDF generator needs them functionally.
 - **Two Dockerfiles**, both multi-stage, both using `uv sync --frozen` (reading `uv.lock` directly) instead of `pip install -r requirements.txt`:
   - `Dockerfile` — `python:3.11-slim` base, CPU-only.
   - `Dockerfile.cuda` — an `nvidia/cuda` runtime base, for GPU-equipped workstations. GitHub-hosted CI runners have no GPU, so CI only *builds* this image, not runs it — the CPU image is built and smoke-run.
@@ -136,7 +135,6 @@ Functions to implement:
 - Input: repo tree (read-only inspection of `src/bscarlos/__pycache__/`, `src/bscarlos/data/__pycache__/`, `src/bscarlos/data/.ipynb_checkpoints/`, root `test.py`, root `__init__.py`).
 - Output: delete all of the above.
 - Verify: `git ls-files | grep -E '__pycache__|ipynb_checkpoints'` returns nothing.
-- **Status: DONE.**
 
 **T2 — Dependency & package-layout migration to the reference MLOps structure**
 - Input: former `requirements.txt`/`setup.py`, former `src/bscarlos/models/` stub.
@@ -148,44 +146,36 @@ Functions to implement:
 - Input: none.
 - Output: `tests/__init__.py`, `tests/conftest.py` (empty placeholder, filled in T9), `tests/unit/__init__.py`, `[tool.pytest.ini_options]` in `pyproject.toml` (`testpaths = ["tests"]`, `addopts = "-ra"`).
 - Verify: `pytest --collect-only` runs with zero errors and zero collected tests.
-- **Status: DONE.**
 
 **T4 — Config schema module**
 - Input: `src/bscarlos/settings.py` (read-only, for the exact existing constant names/types).
 - Output: `src/bscarlos/config/__init__.py`, `src/bscarlos/config/schema.py` — `VAETrainingConfig` dataclass (fields: `channel_set, n_channels, window_size, input_dim, latent_dim, beta, learning_rate, batch_size, num_epochs, train_val_test_split, random_seed, annotator, checkpoint_dir`) and `load_training_config(path: Path | None = None, **overrides) -> VAETrainingConfig`, validating `input_dim == window_size * n_channels`. Do not modify `settings.py`.
 - Verify: `tests/unit/test_settings.py` — defaults match the notebook baseline (`window_size=512, latent_dim=32, beta=0.8, learning_rate=1e-5, batch_size=64, num_epochs=100`); a mismatched `input_dim` raises `ValueError`.
-- **Status: DONE.**
 
 **T5 — Tracked default configs + extended local_settings template**
 - Input: `config/schema.py` (T4), `local_settings_template.yml`.
 - Output: `config/vae_6ch.yml`, `config/vae_17ch.yml`; update `local_settings_template.yml` with optional `device`/`n_jobs` keys, commented as optional.
 - Verify: both YAML configs load via `load_training_config` without error.
-- **Status: DONE.**
 
 **T6 — Synthetic EEG signal + EDF generator**
 - Input: none new (reference `notebooks/00_etl-2.ipynb` channel-name cells, read-only).
 - Output: `src/bscarlos/testing/__init__.py`, `src/bscarlos/testing/synthetic_data.py` with `make_synthetic_eeg_signal(n_channels, n_seconds, sample_rate, seed) -> tuple[np.ndarray, list[tuple[float,float]]]`, `make_synthetic_mne_raw(...) -> mne.io.RawArray`, `export_synthetic_edf(raw, path) -> Path`.
 - Verify: burst-interval mean squared amplitude exceeds suppression-interval amplitude; EDF round-trips through `mne.io.read_raw_edf` with matching channel count/duration.
-- **Status: DONE.**
 
 **T7 — Synthetic annotations + ground-truth generator**
 - Input: `notebooks/00_etl-2.ipynb` annotation-parsing cells (read-only), T6 output.
 - Output: add `make_synthetic_annotations_txt(burst_intervals, seed) -> pd.DataFrame` to `synthetic_data.py`.
 - Verify: write-then-read round trip reproduces `2 * len(burst_intervals)` start/end rows.
-- **Status: DONE.**
 
 **T8 — Synthetic processed-parquet + data_attributes generator**
 - Input: `notebooks/01_bsupp_all_kispi_a1_6ch.ipynb` (read-only, for `data_attributes_kispi.csv` schema), `data_processor_kispi.py` (read-only, for expected dict shape).
 - Output: add `make_synthetic_processed_parquet(channel_set, n_windows, seed) -> pd.DataFrame` and `make_synthetic_data_attributes(patient_ids, sample_rates) -> pd.DataFrame` to `synthetic_data.py`.
 - Verify: correct column count (6 or 17 signal columns + `ground_truth`) and dtypes.
-- Also added `make_synthetic_windows(n_windows, window_size, n_channels, seed)` here — it was listed in the strategy overview's function list but not explicitly assigned to any single task, and T9's `synthetic_windows` fixture needs it.
-- **Status: DONE.**
 
 **T9 — pytest fixtures wiring synthetic generators**
 - Input: T6–T8 functions.
 - Output: fill `tests/conftest.py` with `synthetic_edf_file`, `synthetic_annotations_file`, `synthetic_parquet_6ch`, `synthetic_parquet_17ch`, `synthetic_windows` fixtures.
 - Verify: `pytest tests/unit/test_synthetic_data.py -v` passes using the fixtures.
-- **Status: DONE.**
 
 **T10 — Unit tests for `PatientDataProcessor`**
 - Input: `src/bscarlos/data_processor_kispi.py` (read-only), T8/T9 fixtures.

@@ -44,6 +44,54 @@ This work aims to advance the automation of burst suppression detection, providi
 - **Model Development**: Iterative process in training and validation of unsupervised ML and DL models. 
 - **Evaluation**: Assessment of model performance using metrics like sensitivity, specificity, precision, AUROC, F1-score, NPV, MAE, and Cohen's kappa.
 
+## Getting Started
+
+### Installation
+Dependencies are managed using `uv` (requires Python 3.11.x) with versions locked in `pyproject.toml` and `uv.lock`:
+```bash
+uv sync --extra dev
+```
+*Note: `edf2parquet` is installed directly from a pinned GitHub commit rather than PyPI.*
+
+### Configuration
+1. Copy `local_settings_template.yml` to `local_settings.yml`:
+   ```bash
+   cp local_settings_template.yml local_settings.yml
+   ```
+2. Set `data_folder` in `local_settings.yml` to point to your local KISPI data directory.
+3. Optional configuration keys `device` (`cpu`, `cuda`, `mps`) and `n_jobs` are also supported (see template comments).
+
+### Running Tests
+Run the test suite using `uv`:
+```bash
+uv run pytest tests/ -v
+```
+*Note: Tests strictly generate and use synthetic non-PHI data (`bscarlos.testing.synthetic_data`) and never require real patient data.*
+
+### CLI Usage
+- **Legacy / Data Commands**:
+  ```bash
+  python -m bscarlos --help
+  python -m bscarlos download-raw-data
+  python -m bscarlos preprocess-data
+  ```
+- **Training VAE**:
+  ```bash
+  python scripts/train_vae.py --config config/vae_6ch.yml
+  ```
+  Available flags: `--config`, `--data-path`, `--checkpoint-path`, `--num-epochs`, `--batch-size`, `--learning-rate`, `--latent-dim`, `--beta`, `--channel-set`.
+- **Inference / Prediction**:
+  ```bash
+  python scripts/predict_vae.py --checkpoint-path models/vae_6ch.pt
+  ```
+  Available flags: `--config`, `--checkpoint-path` (required), `--data-path`, `--threshold`, `--output-path`.
+
+### Correctness Validation
+Run `notebooks/refactor_correctness_demo.ipynb` end-to-end in Jupyter or VS Code to validate the full pipeline. It auto-detects local KISPI patient data if present; otherwise, it seamlessly uses synthetic data.
+
+### Repository Layout
+The package layout follows MLOps best practices (`src/bscarlos/` for importable logic, `scripts/` for thin entry points, `config/` for hyperparameters, and `models/` for saved checkpoint artifacts). To preserve compatibility with existing notebooks while avoiding namespace collisions with artifact directories, model code resides under `src/bscarlos/architectures/`. For full details and design rationale, see [REFACTORING_PLAN.md](REFACTORING_PLAN.md).
+
 <!-- ## Version History
 
 * 0.0001
@@ -53,5 +101,3 @@ This work aims to advance the automation of burst suppression detection, providi
 This project is licensed under the Apache 2.0 License - see the [Licence.txt](LICENSE.txt) file for details
 
 ## Acknowledgments
-
-
