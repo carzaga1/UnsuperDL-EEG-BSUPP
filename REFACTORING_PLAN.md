@@ -191,56 +191,67 @@ Functions to implement:
 - Input: `src/bscarlos/data_processor_kispi.py` (read-only), T8/T9 fixtures.
 - Output: `tests/unit/test_data_processor_kispi.py` covering `create_patient_data_dict`, `apply_timedelta_index`, `apply_bandpass_filter`, `split_data_for_5fold_cv`, `remove_ground_truth_column`.
 - Verify: filter output preserves shape/columns and doesn't mutate `ground_truth`.
+- **Status: DONE.**
 
 **T11 — Unit tests for classical detectors**
 - Input: `src/bscarlos/detector.py`/`detector_v2.py`/`detector_v3.py` (read-only), synthetic fixtures.
 - Output: `tests/unit/test_detectors.py` — fit/predict `ClusteringDetector_v3` on synthetic data, assert accuracy above chance (e.g. `> 0.6`) vs known synthetic ground truth.
 - Verify: `pytest tests/unit/test_detectors.py -v` passes; no changes to detector source files.
+- **Status: DONE.** Only `ClusteringDetector_v3` was tested (per this spec); `detector.py`/`detector_v2.py` remain untested read-only references, superseded by v3.
 
 **T12 — Extract `data/edf_ingest.py`**
 - Input: `notebooks/00_etl-2.ipynb` (read-only, channel-drop and file-discovery cells), T9's `synthetic_edf_file`.
 - Output: `src/bscarlos/data/edf_ingest.py` — `read_edf_raw(path) -> mne.io.Raw`, `CHANNELS_TO_DROP: list[str]`, `drop_nonrelevant_channels(raw) -> mne.io.Raw`, `find_annotation_edf_files(raw_dir, annotator) -> list[Path]`.
 - Verify: the synthetic EDF loses exactly the channels listed in `CHANNELS_TO_DROP`.
+- **Status: DONE.**
 
 **T13 — Extract `data/bipolar.py`**
 - Input: `notebooks/00_etl-2.ipynb` bipolar-derivation cell (read-only), T12 output type.
 - Output: `src/bscarlos/data/bipolar.py` — `BIPOLAR_PAIRS: list[tuple[str,str,str]]` (the 6 pairs), `create_bipolar_channels(df) -> pd.DataFrame`.
 - Verify: output has exactly 6 correctly-named bipolar columns matching manual channel-pair subtraction on a synthetic 17-channel DataFrame.
+- **Status: DONE.**
 
 **T14 — Extract `data/ground_truth.py`**
 - Input: `notebooks/00_etl-2.ipynb` annotation/ground-truth cells (read-only), T7's `synthetic_annotations_file`.
 - Output: `src/bscarlos/data/ground_truth.py` — `parse_annotations(path) -> pd.DataFrame`, `build_ground_truth_labels(timestamps, annotations) -> pd.Series`.
 - Verify: reproduces the known synthetic burst intervals exactly.
+- **Status: DONE.** Handles both "Burst starts" and "Burst start" (real annotator files use both spellings inconsistently across patients).
 
 **T15 — Wire `data/preprocess_data.py` CLI to real ETL logic**
 - Input: `src/bscarlos/data/preprocess_data.py` (current no-op stub, existing Click command registered in `__main__.py` — left in place per the deviations note above), T12–T14 modules.
 - Output: chain `edf_ingest → bipolar → ground_truth` inside the existing `@click.command()`, writing parquet to `PROCESSED_KISPI_DATA_FOLDER`.
 - Verify: `CliRunner` test with `RAW_KISPI_DATA_FOLDER` monkeypatched to synthetic EDF+annotations produces a correctly-schemed parquet, exit code 0.
+- **Status: DONE.** Real EDFs carry an absolute `meas_date`; ground-truth timestamps must be timezone-naive to compare against annotation onsets, so the timezone is stripped after `raw.to_data_frame(time_format="datetime")`.
 
 **T16 — Extract `architectures/vae.py`**
 - Input: `notebooks/03_phase2_vae.ipynb` model-definition cells (read-only), current empty `architectures/__init__.py`.
 - Output: `src/bscarlos/architectures/vae.py` — `Encoder`, `Decoder`, `reparameterize(mu, logvar)`, `VAE` (`forward` returns `(reconstructed_x, mu, logvar, z)`, `loss_function(recon_x, x, mu, logvar, beta=0.1)`), signatures identical to the notebook. Update `architectures/__init__.py` to export all of these.
 - Verify: forward pass on a random `(4, 3072)` tensor gives correctly-shaped outputs; `loss_function` returns a non-negative scalar.
+- **Status: DONE** (by Google Jules, PR #2).
 
 **T17 — Extract `architectures/datasets.py`**
 - Input: `notebooks/03_phase2_vae.ipynb` dataset/windowing cells (read-only), T9's `synthetic_windows`.
 - Output: `src/bscarlos/architectures/datasets.py` — `EEGDataset(Dataset)` (identical to notebook), `reshape_to_windows(eeg_array, window_size, n_channels)` (generalized off the hardcoded notebook values). Update `architectures/__init__.py` to also export `EEGDataset`.
 - Verify: `reshape_to_windows` output shape matches `(num_windows, window_size*n_channels)`; `EEGDataset[i]` returns `(float32 tensor, 0)`.
+- **Status: DONE** (by Google Jules, PR #2).
 
 **T18 — Extract `training/train_vae.py`**
 - Input: `notebooks/03_phase2_vae.ipynb` training-loop cells (read-only — use the more complete version with per-component loss tracking), T16/T17 (`bscarlos.architectures`), `config/schema.py` (T4).
 - Output: `src/bscarlos/training/__init__.py`, `src/bscarlos/training/train_vae.py` — `train_vae(windows, config, checkpoint_path) -> dict` (loss histories), saving a checkpoint via `torch.save` into the top-level `models/` directory by default (`checkpoint_path` derived from `config.checkpoint_dir`, resolved against `models/`, not `OUTPUT_FOLDER`).
 - Verify: smoke test with `config.num_epochs=2` on `synthetic_windows` completes in under 30s on CPU, checkpoint file exists, losses are finite.
+- **Status: DONE** (by Google Jules, PR #2). `checkpoint_dir` is used directly as the save directory (not joined against a separate `models/` prefix elsewhere), so `config/schema.py`'s `checkpoint_dir` default was set to `"models"` to fulfill this task's stated intent.
 
 **T19 — Build `inference/predict_vae.py`**
 - Input: `architectures/vae.py` (T16), the checkpoint format from T18. No direct notebook source — this is new synthesis.
 - Output: `src/bscarlos/inference/__init__.py`, `src/bscarlos/inference/predict_vae.py` — `load_model(checkpoint_path, config) -> VAE`, `reconstruction_error(model, windows) -> np.ndarray`, `predict_labels(errors, threshold=None) -> np.ndarray` (default threshold: 75th percentile).
 - Verify: loads T18's checkpoint, output length matches input, errors are finite non-negative, labels are binary.
+- **Status: DONE** (by Google Jules, PR #2).
 
 **T20 — Add `scripts/train_vae.py`/`scripts/predict_vae.py` thin entry points**
 - Input: `scripts/README.md` (convention), `training/train_vae.py` (T18), `inference/predict_vae.py` (T19), `config/schema.py` (T4).
 - Output: `scripts/train_vae.py` and `scripts/predict_vae.py` — thin argument-parsing wrappers (`--config path/to/config.yml` plus override flags) that import from `bscarlos.training`/`bscarlos.inference` and call straight through; no business logic lives in these files.
 - Verify: `python scripts/train_vae.py --config config/vae_6ch.yml --num-epochs 1` (with `PROCESSED_KISPI_DATA_FOLDER` monkeypatched to synthetic parquet via a test harness invoking the script's `main()`) exits 0.
+- **Status: DONE** (by Google Jules, PR #2).
 
 **T21 — Dockerfiles (CPU + CUDA) + docker-compose.yml**
 - Input: final `pyproject.toml`/`uv.lock` (T2), `src/bscarlos/__main__.py`, `scripts/`.
