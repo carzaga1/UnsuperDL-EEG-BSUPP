@@ -1,0 +1,57 @@
+# Local development orchestration only -- not used in CI (see
+# .github/workflows/ci.yml, which builds the images directly).
+#
+# Bind-mounts the whole repo root, so notebooks/ and data/ are live-editable
+# inside the container even though .dockerignore keeps them out of the built
+# image itself. Real KISPI data therefore only ever reaches a container this
+# way, at run time -- never baked into an image layer.
+#
+# Create local_settings.yml (copy from local_settings_template.yml) before
+# running `docker compose up` -- Docker requires the bind-mount source file to
+# already exist on the host.
+
+services:
+  bscarlos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["/app/.venv/bin/jupyter"]
+    command:
+      - notebook
+      - --ip=0.0.0.0
+      - --no-browser
+      - --allow-root
+      - --NotebookApp.token=
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - ./local_settings.yml:/app/local_settings.yml:ro
+    working_dir: /app
+
+  bscarlos-cuda:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda
+    entrypoint: ["/app/.venv/bin/jupyter"]
+    command:
+      - notebook
+      - --ip=0.0.0.0
+      - --no-browser
+      - --allow-root
+      - --NotebookApp.token=
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - ./local_settings.yml:/app/local_settings.yml:ro
+    working_dir: /app
+    profiles:
+      - gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

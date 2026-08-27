@@ -1,0 +1,13 @@
+notebooks/
+data/
+output/
+models/
+references/
+local_settings.yml
+.git
+.venv
+__pycache__
+.ipynb_checkpoints
+*.pyc
+.pytest_cache
+.ruff_cache

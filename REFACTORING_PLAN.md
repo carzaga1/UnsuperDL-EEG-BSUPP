@@ -259,11 +259,13 @@ Functions to implement:
 - Input: final `pyproject.toml`/`uv.lock` (T2), `src/bscarlos/__main__.py`, `scripts/`.
 - Output: `Dockerfile` (python:3.11-slim, two-stage, installs `git` + `uv`, runs `uv sync --frozen --no-dev`) and `Dockerfile.cuda` (nvidia/cuda runtime base, same pattern), `.dockerignore`, and `docker-compose.yml` — a `bscarlos` service building `Dockerfile`, bind-mounting the repo root (`.:/app`) plus `local_settings.yml`, running `jupyter notebook --ip=0.0.0.0 --no-browser`, exposing port 8888; a `bscarlos-cuda` service under a `gpu` compose profile building `Dockerfile.cuda` with the same mounts plus `deploy.resources.reservations.devices` GPU reservation.
 - Verify: `docker build -f Dockerfile -t bscarlos:cpu .` and `docker build -f Dockerfile.cuda -t bscarlos:cuda .` both succeed; `docker run --rm bscarlos:cpu --help` prints CLI help; confirm no `data/`/`references/`/`models/` path appears in the build context; `docker compose config` validates without error; `docker compose up bscarlos` starts and `notebooks/*.ipynb` is visible/editable inside the running container despite being absent from the built image (bind mount, not baked in).
+- **Status: WRITTEN, NOT LOCALLY VERIFIED.** Docker isn't installed in this dev environment, so none of the `docker build`/`docker run`/`docker compose` verification steps above could actually be executed here. `.dockerignore` coverage and the absence of any `COPY data`/`references`/`models` in either Dockerfile were confirmed by manual review; `docker-compose.yml`'s YAML was validated with a plain parser (structurally sound) but not `docker compose config` itself. `Dockerfile.cuda` in particular (CUDA/Ubuntu/Python version alignment) is unverified against real hardware. T22's CI run is the first real verification these get — treat that as the actual test, not this write-up.
 
 **T22 — GitHub Actions CI workflow**
 - Input: `pyproject.toml`/`uv.lock` (T2), full `tests/` suite (T1–T21).
 - Output: `.github/workflows/ci.yml` — checkout, install `uv` (e.g. `astral-sh/setup-uv`), `uv sync --extra dev`, `uv run pytest tests/ -v --cov=bscarlos`, plus a `docker build` step for both Dockerfiles (build-only for CUDA, build + `--help` run for CPU). Include a comment stating no real data is ever fetched or mounted in CI.
 - Verify: CI run is green on push/PR; workflow log contains no reference to `raw_kispi` or `mrn_pseudonym_keys.csv`.
+- **Status: WRITTEN, NOT YET RUN.** Only actually verified once pushed and executed on GitHub's runners (which do have Docker, unlike this dev environment). The `astral-sh/setup-uv@v5` action version is a best-effort pin, not independently confirmed against the live GitHub Marketplace — check it resolves on first CI run.
 
 ---
 
