@@ -1,7 +1,17 @@
 import numpy as np
 import torch
 
-from bscarlos.architectures import EEGDataset, reshape_to_windows
+from bscarlos.architectures import EEGDataset, normalize_eeg_data, reshape_to_windows
+
+
+def test_normalize_eeg_data_scales_to_unit_range():
+    data = np.array([[10.0, -5.0], [50.0, 100.0], [0.0, 30.0]])
+
+    normalized = normalize_eeg_data(data)
+
+    assert normalized.min() == 0.0
+    assert normalized.max() == 1.0
+    assert normalized.shape == data.shape
 
 
 def test_reshape_to_windows():

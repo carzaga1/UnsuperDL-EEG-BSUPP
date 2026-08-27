@@ -199,6 +199,8 @@ Functions to implement:
 - Verify: `pytest tests/unit/test_detectors.py -v` passes; no changes to detector source files.
 - **Status: DONE.** Only `ClusteringDetector_v3` was tested (per this spec); `detector.py`/`detector_v2.py` remain untested read-only references, superseded by v3.
 
+**Post-plan addition — `detector_v4.py`**: adds an opt-in `n_jobs` parameter for `compute_cov_distances` (the O(n^2) pairwise covariance-distance step that dominates `fit()`/`predict()` on long recordings), plus a symmetric-matrix optimization (self-distance matrices only need their upper triangle computed). `detector_v3.py` is left byte-for-byte unchanged as a preserved research artifact, per this project's existing `detector.py` → `detector_v2.py` → `detector_v3.py` versioning convention. Default `n_jobs=1` (sequential) — benchmarking showed naive per-pair and even batched `joblib` parallel dispatch are *slower* than sequential at realistic short-recording scales (~450 windows / 15 min) because of fixed worker-pool startup cost; parallelization only pays off for genuinely long recordings (thousands of windows). See `detector_v4.py`'s class docstring for the full reasoning. Tested in `tests/unit/test_detector_v4.py`.
+
 **T12 — Extract `data/edf_ingest.py`**
 - Input: `notebooks/00_etl-2.ipynb` (read-only, channel-drop and file-discovery cells), T9's `synthetic_edf_file`.
 - Output: `src/bscarlos/data/edf_ingest.py` — `read_edf_raw(path) -> mne.io.Raw`, `CHANNELS_TO_DROP: list[str]`, `drop_nonrelevant_channels(raw) -> mne.io.Raw`, `find_annotation_edf_files(raw_dir, annotator) -> list[Path]`.

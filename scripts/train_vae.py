@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from bscarlos.architectures.datasets import reshape_to_windows
+from bscarlos.architectures.datasets import normalize_eeg_data, reshape_to_windows
 from bscarlos.config import load_training_config
 from bscarlos.training import train_vae
 
@@ -47,7 +47,7 @@ def main(cli_args: list[str] | None = None) -> None:
             df = pd.read_parquet(data_path)
             if "ground_truth" in df.columns:
                 df = df.drop(columns=["ground_truth"])
-            raw_data = df.values
+            raw_data = normalize_eeg_data(df.values)
             windows = reshape_to_windows(raw_data, window_size=config.window_size, n_channels=config.n_channels)
         elif data_path.suffix in [".npy", ".npz"]:
             windows = np.load(data_path)

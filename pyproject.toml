@@ -26,6 +26,7 @@ dependencies = [
     "click==8.1.7",
     "mne==1.9.0",
     "edfio==0.4.16",
+    "joblib==1.5.3",
 ]
 
 [project.optional-dependencies]
